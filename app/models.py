@@ -168,3 +168,74 @@ class Notification(models.Model):
         
         except cls.DoesNotExist:
             return False, "Notificacion no encontrada"
+        
+class RefundRequest(models.Model):
+    approved = models.BooleanField(default=False)
+    approval_date = models.DateField(null=True, blank=True)
+    ticket_code = models.CharField(max_length=50)
+    reason = models.TextField   
+    created_at = models.DateField(auto_now_add=True)
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="RefundRequest")
+
+    def __str__(self):
+        return f"{self.ticket_code} - {self.user.username}"
+    
+    @classmethod
+    def validate(cls, ticket_code, reason):
+        errors = {}
+
+        if not ticket_code:
+            errors["ticket_code"] = "El código de ticket no puede estar vacío."
+
+        if not reason:
+            errors["reason"] = "El motivo no puede estar vacío."
+
+        return errors
+
+    @classmethod
+    def new(cls, ticket_code, reason, user, approved=False, approval_date=None, created_at=None):
+        errors = cls.validate(ticket_code, reason)
+
+        if errors:
+            return False, errors
+
+        refund = cls(
+            ticket_code=ticket_code,
+            reason=reason,
+            user=user,
+            approved=approved,
+            approval_date=approval_date,
+            created_at=created_at
+        )
+        refund.save()
+        return True, refund
+
+    @classmethod
+    def update(cls, refund_id, ticket_code, reason, approved, approval_date):
+        try:
+            refund = cls.objects.get(id=refund_id)
+
+            errors = cls.validate(ticket_code, reason)
+            if errors:
+                return False, errors
+
+            refund.ticket_code = ticket_code
+            refund.reason = reason
+            refund.approved = approved
+            refund.approval_date = approval_date
+            refund.save()
+
+            return True, refund
+
+        except cls.DoesNotExist:
+            return False, "Solicitud de reembolso no encontrada."
+
+    @classmethod
+    def delete_id(cls, refund_id):
+        try:
+            refund = cls.objects.get(id=refund_id)
+            refund.delete()
+            return True, "Solicitud de reembolso eliminada correctamente."
+
+        except cls.DoesNotExist:
+            return False, "Solicitud de reembolso no encontrada."
