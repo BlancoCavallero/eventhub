@@ -17,7 +17,7 @@
         </div>
     </div>
     <div class="row">
-        <div class="card">
+        <div class="card mb-4">
             <div class="card-body">
                 <h5 class="card-title">Detalles del Evento</h5>
                 <p class="card-text">{{ event.description }}</p>
@@ -42,6 +42,13 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <div class="card" style="background-color: lightgray;">
+            <h5 class="card-title mt-2 mb-2" > Comentarios ({{ event.num_comment|default:0 }})</h5>
+        </div>
+        <div class="card">
+            <h6 class="card-text mt-2 mb-2">Ejemplo
+            </h6>
         </div>
     </div>
 </div>

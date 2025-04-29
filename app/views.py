@@ -7,6 +7,7 @@ from django.utils import timezone
 from datetime import timedelta
 from .models import Event, User, Ticket
 from .forms import TicketForm
+from django.db.models import Count
 
 
 def register(request):
@@ -62,12 +63,18 @@ def home(request):
 
 @login_required
 def events(request):
-    events = Event.objects.all().order_by("scheduled_at")
+    events = Event.objects.all().order_by("scheduled_at") # Los eventos
+    events_with_comments = Event.objects.annotate(num_comment=Count('comentarios')).order_by('scheduled_at') # Los eventos pero con conteo de comentarios
+
     return render(
-        request,
-        "app/events.html",
-        {"events": events, "user_is_organizer": request.user.is_organizer},
-    )
+    request,
+    "app/events.html",
+    {
+        "events": events,
+        "events_with_comments": events_with_comments,
+        "user_is_organizer": request.user.is_organizer,
+    },
+)
 
 
 @login_required

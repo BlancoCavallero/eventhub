@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 import uuid
 from django.contrib.auth import get_user_model
+from django.conf import settings
 
 
 class User(AbstractUser):
@@ -168,3 +169,23 @@ class Notification(models.Model):
         
         except cls.DoesNotExist:
             return False, "Notificacion no encontrada"
+
+class Comment(models.Model):
+    titulo = models.CharField(max_length=255)
+    texto = models.TextField()
+    created_date = models.DateTimeField(auto_now_add=True)
+
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='comentarios'
+    )
+
+    evento = models.ForeignKey(
+        'app.Event',
+        on_delete=models.CASCADE,
+        related_name='comentarios'
+    )
+
+    def __str__(self):
+        return f"{self.titulo} - {self.usuario}"
