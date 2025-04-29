@@ -48,21 +48,28 @@
                 Comentarios ({{ num_comments|default:0 }})  <!-- Muestra la cantidad de comentarios -->
             </h5>
         </div>
-        
-        <div class="card">
+        <div class="card mb-4">
             {% for comment in comments %}
                 <div class="card-body">
                     <h6 class="bi bi-person" >{{ comment.usuario.username }}</h6>  <!-- Muestra el nombre del usuario -->
                     <small class="text-muted">Publicado el {{ comment.created_date|date:"d M Y H:i" }}</small>  <!-- Fecha de publicación -->
-                    <p class="card-text">{{ comment.texto }}</p>  <!-- Muestra el texto del comentario -->
+                    <h5 class="card-title fw-bold">{{ comment.titulo }}</h5>  <!-- Muestra el texto del comentario -->
+                    <p class="card-text ">{{ comment.texto }}</p>  <!-- Muestra el texto del comentario -->
+                    <hr>
                 </div>
             {% empty %}
                 <div class="card-body">
                     <p class="card-text">No hay comentarios aún.</p>  <!-- Mensaje si no hay comentarios -->
                 </div>
             {% endfor %}
+            <div>
+                <h6 class="card-title"> Titulo del Comentario *</h6>
+                <input type="text" class="form-control mb-2" id="myInput" placeholder="Ingresa el titulo de tu comentario">
+                <h6 class="card-title mt-4"> Contenido del Comentario * *</h6>
+                <input type="text" class="form-control py-5 mb-2" id="myInput" placeholder="Escribe el contenido del comentario aquí">
+                <button type="button" class="btn btn-primary mb-4">subir</button>
+            </div>
         </div>
-        
     </div>
 </div>
 {% endblock %}
