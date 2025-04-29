@@ -44,12 +44,25 @@
             </div>
         </div>
         <div class="card" style="background-color: lightgray;">
-            <h5 class="card-title mt-2 mb-2" > Comentarios ({{ event.num_comment|default:0 }})</h5>
+            <h5 class="card-title mt-2 mb-2">
+                Comentarios ({{ num_comments|default:0 }})  <!-- Muestra la cantidad de comentarios -->
+            </h5>
         </div>
+        
         <div class="card">
-            <h6 class="card-text mt-2 mb-2">Ejemplo
-            </h6>
+            {% for comment in comments %}
+                <div class="card-body">
+                    <h6 class="bi bi-person" >{{ comment.usuario.username }}</h6>  <!-- Muestra el nombre del usuario -->
+                    <small class="text-muted">Publicado el {{ comment.created_date|date:"d M Y H:i" }}</small>  <!-- Fecha de publicación -->
+                    <p class="card-text">{{ comment.texto }}</p>  <!-- Muestra el texto del comentario -->
+                </div>
+            {% empty %}
+                <div class="card-body">
+                    <p class="card-text">No hay comentarios aún.</p>  <!-- Mensaje si no hay comentarios -->
+                </div>
+            {% endfor %}
         </div>
+        
     </div>
 </div>
 {% endblock %}

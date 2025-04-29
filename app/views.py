@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from datetime import timedelta
-from .models import Event, User, Ticket
+from .models import Event, User, Ticket, Comment
 from .forms import TicketForm
 from django.db.models import Count
 
@@ -80,7 +80,22 @@ def events(request):
 @login_required
 def event_detail(request, id):
     event = get_object_or_404(Event, pk=id)
-    return render(request, "app/event_detail.html", {"event": event})
+    
+    comments = Comment.objects.filter(evento=event).order_by('-created_date')
+    
+    # Añadir el número de comentarios al evento
+    num_comments = comments.count()  # Conteo de comentarios
+
+    return render(
+        request,
+        "app/event_detail.html",
+        {
+            "event": event,
+            "comments": comments,   # Lista de comentarios
+            "num_comments": num_comments,  # Número de comentarios
+        }
+    )
+
 
 
 @login_required
