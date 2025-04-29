@@ -15,6 +15,7 @@
     {% endfor %}
     <form method="POST">
         {% csrf_token %}
+        <div>
         <h6 class="card-title"> Titulo del Comentario *</h6>
         <input type="text" class="form-control mb-2" name="tittle" placeholder="Ingresa el titulo de tu comentario">
         
@@ -22,6 +23,7 @@
         <textarea class="form-control py-2 mb-2" name="text" rows="4" placeholder="Escribe el contenido del comentario aquí"></textarea>
     
         <button type="submit" class="btn btn-primary mb-4">Subir</button>
+        </div>
     </form>
     <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
