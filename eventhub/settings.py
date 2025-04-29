@@ -134,3 +134,6 @@ LOGIN_REDIRECT_URL = "/events/"
 LOGIN_URL = "/accounts/login/"
 
 LOGOUT_REDIRECT_URL = "/accounts/login/"
+
+TIME_ZONE = "America/Argentina/Buenos_Aires"
+USE_TZ = True

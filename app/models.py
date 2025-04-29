@@ -3,6 +3,7 @@ from django.db import models
 import uuid
 from django.contrib.auth import get_user_model
 from django.conf import settings
+from django.utils import timezone
 
 
 class User(AbstractUser):
@@ -171,21 +172,23 @@ class Notification(models.Model):
             return False, "Notificacion no encontrada"
 
 class Comment(models.Model):
-    titulo = models.CharField(max_length=255)
-    texto = models.TextField()
-    created_date = models.DateTimeField(auto_now_add=True)
+    tittle = models.CharField(max_length=255)
+    text = models.TextField()
+    created_date = models.DateTimeField(default=timezone.now)
 
-    usuario = models.ForeignKey(
+    user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='comentarios'
+        related_name='comment',
+        null=True
     )
 
-    evento = models.ForeignKey(
+    event = models.ForeignKey(
         'app.Event',
         on_delete=models.CASCADE,
-        related_name='comentarios'
+        related_name='comment',
+        null=True
     )
 
     def __str__(self):
-        return f"{self.titulo} - {self.usuario}"
+        return f"{self.tittle} - {self.user}"

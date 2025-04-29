@@ -81,7 +81,7 @@ def events(request):
 def event_detail(request, id):
     event = get_object_or_404(Event, pk=id)
     
-    comments = Comment.objects.filter(evento=event).order_by('-created_date')
+    comments = Comment.objects.filter(event=event).order_by('-created_date')
     
     # Añadir el número de comentarios al evento
     num_comments = comments.count()  # Conteo de comentarios

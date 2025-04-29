@@ -51,10 +51,10 @@
         <div class="card mb-4">
             {% for comment in comments %}
                 <div class="card-body">
-                    <h6 class="bi bi-person" >{{ comment.usuario.username }}</h6>  <!-- Muestra el nombre del usuario -->
+                    <h6 class="bi bi-person" >{{ comment.user.username }}</h6>  <!-- Muestra el nombre del usuario -->
                     <small class="text-muted">Publicado el {{ comment.created_date|date:"d M Y H:i" }}</small>  <!-- Fecha de publicación -->
-                    <h5 class="card-title fw-bold">{{ comment.titulo }}</h5>  <!-- Muestra el texto del comentario -->
-                    <p class="card-text ">{{ comment.texto }}</p>  <!-- Muestra el texto del comentario -->
+                    <h5 class="card-title fw-bold">{{ comment.tittle }}</h5>  <!-- Muestra el texto del comentario -->
+                    <p class="card-text ">{{ comment.text }}</p>  <!-- Muestra el texto del comentario -->
                     <hr>
                 </div>
             {% empty %}
