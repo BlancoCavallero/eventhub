@@ -224,3 +224,23 @@ def ticket_delete(request, ticket_id):
         messages.error(request, "No tienes permisos para eliminar este ticket.")
 
     return redirect("ticket_list")
+#Mostrar Todos los comentarios de los eventos de un organizador
+@login_required
+def comentarios_organizador(request):
+    if not request.user.is_authenticated or not request.user.is_organizer:
+        return render(request, '403.html')  # O redirigir
+
+    # Filtrar los comentarios de eventos cuyo organizador es el usuario logueado
+    comentarios = Comment.objects.filter(event__organizer=request.user)
+
+    return render(request, 'app/organizator_comment.html', {'comentarios': comentarios})
+#Eliminar Comentarios
+
+def delete_comment(request, comment_id):
+    comentario = get_object_or_404(Comment, id=comment_id)
+
+    # Verificar que el usuario que intenta eliminar el comentario es el mismo que lo creó
+    if comentario.user == request.user:
+        comentario.delete()
+
+    return redirect('organizator_comment')  # Redirige a la vista de los comentarios o al listado de eventos

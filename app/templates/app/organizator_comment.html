@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Comentarios de tus eventos{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Comentarios de tus eventos</h1>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Usuario</th>
+                <th>Comentario</th>
+                <th>Evento</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for comment in comentarios %}
+            <tr>
+                <td>{{ comment.tittle }}</td>
+                <td>{{ comment.user.username }}</td>
+                <td>{{ comment.text }}</td>
+                <td>{{ comment.event.title }}</td>
+                <td>{{ comment.created_date|date:"d M Y, H:i" }}</td>
+                <td>
+                    <form action="{% url 'delete_comment' comment.id %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td>...</td>
+                <td>...</td>
+                <td>...</td>
+                <td>...</td>
+                <td>...</td>
+                <td>...</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

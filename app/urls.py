@@ -20,4 +20,8 @@ urlpatterns = [
     path('tickets/<int:event_id>/create/', views.ticket_create, name="ticket_create"),
     path('tickets/<int:ticket_id>/edit/', views.ticket_update, name="ticket_update"),
     path('tickets/<int:ticket_id>/delete/', views.ticket_delete, name="ticket_delete"),
+    #Comentario
+    path('organizator_comment/', views.comentarios_organizador, name='organizator_comment'),
+    path('eliminar_comentario/<int:comment_id>/', views.delete_comment, name='delete_comment'),
 ]
+
