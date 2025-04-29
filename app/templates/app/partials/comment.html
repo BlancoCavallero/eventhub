@@ -1,0 +1,32 @@
+{% block content %}
+<div class="card mb-4" style="border: none;">
+    {% for comment in comments %}
+        <div class="card-body">
+            <h6 class="bi bi-person" >{{ comment.user.username }}</h6>  <!-- Muestra el nombre del usuario -->
+            <small class="text-muted">Publicado el {{ comment.created_date|date:"d M Y H:i" }}</small>  <!-- Fecha de publicación -->
+            <h5 class="card-title fw-bold">{{ comment.tittle }}</h5>  <!-- Muestra el texto del comentario -->
+            <p class="card-text ">{{ comment.text }}</p>  <!-- Muestra el texto del comentario -->
+            <hr>
+        </div>
+    {% empty %}
+        <div class="card-body">
+            <p class="card-text">No hay comentarios aún.</p>  <!-- Mensaje si no hay comentarios -->
+        </div>
+    {% endfor %}
+    <form method="POST">
+        {% csrf_token %}
+        <h6 class="card-title"> Titulo del Comentario *</h6>
+        <input type="text" class="form-control mb-2" name="tittle" placeholder="Ingresa el titulo de tu comentario">
+        
+        <h6 class="card-title mt-4"> Contenido del Comentario *</h6>
+        <textarea class="form-control py-2 mb-2" name="text" rows="4" placeholder="Escribe el contenido del comentario aquí"></textarea>
+    
+        <button type="submit" class="btn btn-primary mb-4">Subir</button>
+    </form>
+    <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
+    crossorigin="anonymous"
+></script>
+</div>
+{% endblock %}

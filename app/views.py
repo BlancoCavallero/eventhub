@@ -9,7 +9,6 @@ from .models import Event, User, Ticket, Comment
 from .forms import TicketForm
 from django.db.models import Count
 
-
 def register(request):
     if request.method == "POST":
         email = request.POST.get("email")

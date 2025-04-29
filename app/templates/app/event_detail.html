@@ -43,37 +43,28 @@
                 </div>
             </div>
         </div>
-        <div class="card" style="background-color: lightgray;">
-            <h5 class="card-title mt-2 mb-2">
-                Comentarios ({{ num_comments|default:0 }})  <!-- Muestra la cantidad de comentarios -->
-            </h5>
-        </div>
-        <div class="card mb-4">
-            {% for comment in comments %}
-                <div class="card-body">
-                    <h6 class="bi bi-person" >{{ comment.user.username }}</h6>  <!-- Muestra el nombre del usuario -->
-                    <small class="text-muted">Publicado el {{ comment.created_date|date:"d M Y H:i" }}</small>  <!-- Fecha de publicación -->
-                    <h5 class="card-title fw-bold">{{ comment.tittle }}</h5>  <!-- Muestra el texto del comentario -->
-                    <p class="card-text ">{{ comment.text }}</p>  <!-- Muestra el texto del comentario -->
-                    <hr>
-                </div>
-            {% empty %}
-                <div class="card-body">
-                    <p class="card-text">No hay comentarios aún.</p>  <!-- Mensaje si no hay comentarios -->
-                </div>
-            {% endfor %}
-            <form method="POST">
-                {% csrf_token %}
-                <h6 class="card-title"> Titulo del Comentario *</h6>
-                <input type="text" class="form-control mb-2" name="tittle" placeholder="Ingresa el titulo de tu comentario">
+            <!-- Botón para mostrar comentarios -->
+            <div class="card mb-2 mt-2" style="background-color: lightgray;">
+                <nav>
+                    <button class="btn btn-secondary" style="border: none; background-color: lightgray; color: black ; font-size: 17pt;" onclick="toggleComments()">Comentarios ({{ num_comments|default:0 }})</button>
+                    <button class="btn btn-secondary" style="border: none; background-color: lightgray; color: black ; font-size: 17pt;" onclick="toggleRatings()">Ratings ({{ num_ratings|default:0 }})</button>
+                </nav>
                 
-                <h6 class="card-title mt-4"> Contenido del Comentario *</h6>
-                <textarea class="form-control py-2 mb-2" name="text" rows="4" placeholder="Escribe el contenido del comentario aquí"></textarea>
+            </div>
             
-                <button type="submit" class="btn btn-primary mb-4">Subir</button>
-            </form>
-            
-        </div>
+            <!-- Div contenedor de comentarios -->
+            <div class="card" id="comments-section" style="display: none;">
+                {% include "app/partials/comment.html" %}
+                <!--Aca usas lo mismo de arriba pero con partials/Ratings-->
+            </div>
+
+            <script>
+            function toggleComments() {
+                const section = document.getElementById('comments-section');
+                section.style.display = section.style.display === 'none' ? 'block' : 'none';
+            }
+            </script>
+
     </div>
 </div>
 {% endblock %}
