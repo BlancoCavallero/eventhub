@@ -62,13 +62,17 @@
                     <p class="card-text">No hay comentarios aún.</p>  <!-- Mensaje si no hay comentarios -->
                 </div>
             {% endfor %}
-            <div>
+            <form method="POST">
+                {% csrf_token %}
                 <h6 class="card-title"> Titulo del Comentario *</h6>
-                <input type="text" class="form-control mb-2" id="myInput" placeholder="Ingresa el titulo de tu comentario">
-                <h6 class="card-title mt-4"> Contenido del Comentario * *</h6>
-                <input type="text" class="form-control py-5 mb-2" id="myInput" placeholder="Escribe el contenido del comentario aquí">
-                <button type="button" class="btn btn-primary mb-4">subir</button>
-            </div>
+                <input type="text" class="form-control mb-2" name="tittle" placeholder="Ingresa el titulo de tu comentario">
+                
+                <h6 class="card-title mt-4"> Contenido del Comentario *</h6>
+                <textarea class="form-control py-2 mb-2" name="text" rows="4" placeholder="Escribe el contenido del comentario aquí"></textarea>
+            
+                <button type="submit" class="btn btn-primary mb-4">Subir</button>
+            </form>
+            
         </div>
     </div>
 </div>

@@ -64,7 +64,7 @@ def home(request):
 @login_required
 def events(request):
     events = Event.objects.all().order_by("scheduled_at") # Los eventos
-    events_with_comments = Event.objects.annotate(num_comment=Count('comentarios')).order_by('scheduled_at') # Los eventos pero con conteo de comentarios
+    events_with_comments = Event.objects.annotate(num_comment=Count('comment')).order_by('scheduled_at') # Los eventos pero con conteo de comentarios
 
     return render(
     request,
@@ -79,22 +79,26 @@ def events(request):
 
 @login_required
 def event_detail(request, id):
-    event = get_object_or_404(Event, pk=id)
-    
-    comments = Comment.objects.filter(event=event).order_by('-created_date')
-    
-    # Añadir el número de comentarios al evento
-    num_comments = comments.count()  # Conteo de comentarios
+    event = get_object_or_404(Event, id=id)
+    comments = event.comment.all()  # related_name='comment'
 
-    return render(
-        request,
-        "app/event_detail.html",
-        {
-            "event": event,
-            "comments": comments,   # Lista de comentarios
-            "num_comments": num_comments,  # Número de comentarios
-        }
-    )
+    if request.method == 'POST':
+        tittle = request.POST.get('tittle')
+        text = request.POST.get('text')
+        Comment.objects.create(
+            tittle=tittle,
+            text=text,
+            user=request.user,
+            event=event,
+            created_date=timezone.now()
+        )
+        return redirect('event_detail', id=event.id)
+
+    return render(request, 'app/event_detail.html', {
+        'event': event,
+        'comments': Comment.objects.filter(event=event).order_by("-created_date"),
+        'num_comments': comments.count()
+    })
 
 
 
