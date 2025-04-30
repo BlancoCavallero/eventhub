@@ -170,15 +170,20 @@ class Notification(models.Model):
             return False, "Notificacion no encontrada"
         
 class RefundRequest(models.Model):
-    approved = models.BooleanField(default=False)
+    approved = models.BooleanField(null=True, blank=True)
     approval_date = models.DateField(null=True, blank=True)
     ticket_code = models.CharField(max_length=50)
-    reason = models.TextField   
+    reason = models.CharField(max_length=255)
     created_at = models.DateField(auto_now_add=True)
     user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name="RefundRequest")
 
     def __str__(self):
         return f"{self.ticket_code} - {self.user.username}"
+    
+    def get_status_display(self):
+        if self.approved is None:
+                return "Pendiente"
+        return "Aprobado" if self.approved else "Rechazado"
     
     @classmethod
     def validate(cls, ticket_code, reason):
@@ -211,20 +216,26 @@ class RefundRequest(models.Model):
         return True, refund
 
     @classmethod
-    def update(cls, refund_id, ticket_code, reason, approved, approval_date):
+    def update(cls, refund_id, ticket_code=None, reason=None, approved=None, approval_date=None):
         try:
             refund = cls.objects.get(id=refund_id)
 
-            errors = cls.validate(ticket_code, reason)
-            if errors:
-                return False, errors
+            # Si te pasan ticket_code o reason, validás.
+            if ticket_code is not None or reason is not None:
+                errors = cls.validate(ticket_code or refund.ticket_code, reason or refund.reason)
+                if errors:
+                    return False, errors
 
-            refund.ticket_code = ticket_code
-            refund.reason = reason
-            refund.approved = approved
-            refund.approval_date = approval_date
+            if ticket_code is not None:
+                refund.ticket_code = ticket_code
+            if reason is not None:
+                refund.reason = reason
+            if approved is not None:
+                refund.approved = approved
+            if approval_date is not None:
+                refund.approval_date = approval_date
+
             refund.save()
-
             return True, refund
 
         except cls.DoesNotExist:

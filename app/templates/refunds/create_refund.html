@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Solicitar Reembolso</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-5">
+
+    <h2>Solicitar Reembolso</h2>
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card p-4 mb-3">
+                <h5>Formulario de Solicitud</h5>
+                <div class="alert alert-info">
+                    Puedes solicitar un reembolso hasta 48 horas antes del evento. Una vez procesada la solicitud, el reembolso se realizará en un plazo de 7 a 14 días hábiles.
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        {{ form.ticket_code.label_tag }}
+                        {{ form.ticket_code }}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.reason.label_tag }}
+                        {{ form.reason }}
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" required>
+                        <label class="form-check-label">
+                            Entiendo y acepto la <a href="#">política de reembolsos</a>.
+                        </label>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Enviar Solicitud</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card p-4">
+                <h5>Política de Reembolsos</h5>
+                <ul class="list-unstyled">
+                    <li>✅ Reembolso del 100% hasta 7 días antes del evento.</li>
+                    <li>✅ Reembolso del 50% entre 7 y 2 días antes del evento.</li>
+                    <li>❌ Sin reembolso en menos de 48 horas del evento.</li>
+                    <li>💳 El reembolso se realizará al mismo medio de pago utilizado en la compra.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
