@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load tz i18n %}
 
 {% block title %}Eventos{% endblock %}
 
@@ -47,7 +48,7 @@
                 <tr class="{% if event.is_favorite %}table-warning{% endif %}">
                     <td>{{ event.title }}</td>
                     <td>{{ event.description }}</td>
-                    <td>{{ event.scheduled_at|date:"d b Y, H:i" }}</td>
+                    <td>{{ event.scheduled_at|localtime|date:"j M Y, H:i"|lower }}</td>
                     <td>
                         {% for category in event.categories.all %}
                             <span class="badge bg-secondary">{{ category.name }}</span>
@@ -129,4 +130,4 @@
         </tbody>
     </table>
 </div>
-{% endblock %}
+{% endblock %}

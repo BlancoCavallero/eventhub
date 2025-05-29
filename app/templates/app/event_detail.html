@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load rating_average %}
+{% load tz %}
 
 {% block content %}
 <div class="container">
@@ -45,7 +46,7 @@
                         </div>
                         <div>
                             <h6 class="mb-0">Fecha y Hora</h6>
-                            <p class="mb-0">{{ event.scheduled_at|date:"l, j \\d\\e F \\d\\e Y, H:i" }}</p>
+                            <p class="mb-0">{{ event.scheduled_at|localtime|date:"l, j \\d\\e F \\d\\e Y, H:i" }}</p>
                             {% if not request.user.is_authenticated or not request.user.is_organizer %}
                             <div id="countdown" class="text-info fw-bold mt-1"></div>
                             {% endif %}
@@ -146,7 +147,7 @@
                     const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
                     document.getElementById("countdown").innerHTML =
-                        `Faltan ${days}d ${hours}h ${minutes}m ${seconds}s`;
+                        Faltan ${days}d ${hours}h ${minutes}m ${seconds}s;
 
                     setTimeout(updateCountdown, 1000);
                 }
@@ -158,4 +159,4 @@
     </div>
 
 </div>
-{% endblock %}
+{% endblock %}

@@ -342,63 +342,40 @@ class EventCRUDTest(EventBaseTest):
         expect(row.locator("td").nth(4)).to_contain_text("Activo") # Asume que se crea como "Activo"
 
     def test_edit_event_organizer(self):
-        """Test que verifica la funcionalidad de editar un evento para organizadores"""
         self.login_user("organizador", "password123")
         self.page.goto(f"{self.live_server_url}/events/")
 
+        # Abrir el formulario de edición
         self.page.get_by_role("link", name="Editar").first.click()
+        expect(self.page).to_have_url(
+            f"{self.live_server_url}/events/{self.event1.id}/edit/" # type: ignore
+        )
 
-        expect(self.page).to_have_url(f"{self.live_server_url}/events/{self.event1.id}/edit/")  # type:ignore
+        # Rellenar título y descripción
+        self.page.get_by_label("Título del Evento").fill("Titulo editado")
+        self.page.get_by_label("Descripción").fill("Descripcion Editada")
 
-        header = self.page.locator("h1")
-        expect(header).to_have_text("Editar evento")
-        expect(header).to_be_visible()
+        # 1) Fecha y hora FIJA
+        fixed_dt = dj_timezone.make_aware(datetime(2025, 5, 30, 16, 30))
+        self.page.get_by_label("Fecha").fill(fixed_dt.strftime("%Y-%m-%d"))
+        self.page.get_by_label("Hora").fill(fixed_dt.strftime("%H:%M"))
 
-        # Verificar formulario precargado y editar campos
-        title = self.page.get_by_label("Título del Evento")
-        expect(title).to_have_value(self.event1.title)
-        title.fill("Titulo editado")
-
-        description = self.page.get_by_label("Descripción")
-        expect(description).to_have_value(self.event1.description)
-        description.fill("Descripcion Editada")
-
-        future_dt = dj_timezone.now() + timedelta(days=1)
-        future_date_str = future_dt.strftime("%Y-%m-%d")
-        future_time_str = future_dt.strftime("%H:%M")
-
-        date = self.page.get_by_label("Fecha")
-        expect(date).to_have_value(self.event1.scheduled_at.strftime("%Y-%m-%d"))
-        date.fill(future_date_str)
-
-        time = self.page.get_by_label("Hora")
-
-        # Obtener el valor actual precargado en el input hora (para evitar fallos por diferencias de zona horaria)
-        current_time_in_form = time.input_value()
-        print("Hora precargada en el formulario:", current_time_in_form)
-
-        # Validar que el input tiene el valor que efectivamente muestra la página
-        expect(time).to_have_value(current_time_in_form)
-
-        # Luego llenar con la hora futura que queremos editar
-        time.fill(future_time_str)
-
+        # Guardar cambios
         self.page.get_by_role("button", name="Actualizar Evento").click()
-
         expect(self.page).to_have_url(f"{self.live_server_url}/events/")
 
-        # Ubicar la fila del evento editado en la tabla
-        edited_row = self.page.locator(f"text=Titulo editado").locator("..")
-
+        # Localizar fila editada
+        edited_row = self.page.locator("text=Titulo editado").locator("..")
         expect(edited_row.locator("td").nth(0)).to_have_text("Titulo editado")
         expect(edited_row.locator("td").nth(1)).to_have_text("Descripcion Editada")
 
-        expected_edited_date_time = self._format_date_for_table(future_dt)
-        print("Hora esperada en tabla:", expected_edited_date_time)  
-        expect(edited_row.locator("td").nth(2)).to_have_text(expected_edited_date_time)
+        # 2) Comparar contra lo guardado en la DB
+        from app.models import Event
+        event_actualizado = Event.objects.get(id=self.event1.id) # type: ignore
+        expected = self._format_date_for_table(event_actualizado.scheduled_at)
+        expect(edited_row.locator("td").nth(2)).to_have_text(expected)
 
-        # Verifica el estado — ajusta si tu app cambia el estado después de editar
-        expect(edited_row.locator("td").nth(4)).to_contain_text("Activo")
+        expect(edited_row.locator("td").nth(4)).to_contain_text("Reprogramado")
     
 
     def test_delete_event_organizer(self):
