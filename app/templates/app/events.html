@@ -88,7 +88,7 @@
                                    title="Comprar Ticket">
                                     <i class="bi bi-cart-plus" aria-hidden="true"></i> Comprar Ticket
                                 </a>
-                                <form action="{% url 'toggle_favorite' event.id %}" method="POST" class="d-inline">
+                                <form action="{% url 'toggle_favorite' event.id %}" method="POST" class="d-inline favourite-form">
                                     {% csrf_token %}
                                     {% if event.is_favorite %}
                                         <button class="btn btn-sm btn-warning" title="Quitar de favoritos">

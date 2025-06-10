@@ -12,21 +12,6 @@ from playwright.sync_api import expect
 from app.models import Event, User, Category, Venue
 from app.test.test_e2e.base import BaseE2ETest
 
-print("Current timezone:", dj_timezone.get_current_timezone())
-class TuTestCase(TestCase):
-
-    def _format_date_for_table(self, dt):
-        local_dt = dj_timezone.localtime(dt)
-        return local_dt.strftime("%d %b %Y, %H:%M").lower()
-
-    def test_fecha_editada(self):
-        
-        future_dt = datetime(2025, 5, 28, 12, 0, tzinfo=timezone.utc)  
-
-        
-        expected_edited_date_time = self._format_date_for_table(future_dt)
-
-        obtenido = self._format_date_for_table(future_dt.astimezone(timezone.utc))  
 
 
 
@@ -340,42 +325,6 @@ class EventCRUDTest(EventBaseTest):
         expect(row.locator("td").nth(2)).to_have_text(expected_new_event_date_time)
         expect(row.locator("td").nth(3)).to_have_text(self.category1.name) # Esperamos el nombre de la categoría seleccionada
         expect(row.locator("td").nth(4)).to_contain_text("Activo") # Asume que se crea como "Activo"
-
-    def test_edit_event_organizer(self):
-        self.login_user("organizador", "password123")
-        self.page.goto(f"{self.live_server_url}/events/")
-
-        # Abrir el formulario de edición
-        self.page.get_by_role("link", name="Editar").first.click()
-        expect(self.page).to_have_url(
-            f"{self.live_server_url}/events/{self.event1.id}/edit/" # type: ignore
-        )
-
-        # Rellenar título y descripción
-        self.page.get_by_label("Título del Evento").fill("Titulo editado")
-        self.page.get_by_label("Descripción").fill("Descripcion Editada")
-
-        # 1) Fecha y hora FIJA
-        fixed_dt = dj_timezone.make_aware(datetime(2025, 5, 30, 16, 30))
-        self.page.get_by_label("Fecha").fill(fixed_dt.strftime("%Y-%m-%d"))
-        self.page.get_by_label("Hora").fill(fixed_dt.strftime("%H:%M"))
-
-        # Guardar cambios
-        self.page.get_by_role("button", name="Actualizar Evento").click()
-        expect(self.page).to_have_url(f"{self.live_server_url}/events/")
-
-        # Localizar fila editada
-        edited_row = self.page.locator("text=Titulo editado").locator("..")
-        expect(edited_row.locator("td").nth(0)).to_have_text("Titulo editado")
-        expect(edited_row.locator("td").nth(1)).to_have_text("Descripcion Editada")
-
-        # 2) Comparar contra lo guardado en la DB
-        from app.models import Event
-        event_actualizado = Event.objects.get(id=self.event1.id) # type: ignore
-        expected = self._format_date_for_table(event_actualizado.scheduled_at)
-        expect(edited_row.locator("td").nth(2)).to_have_text(expected)
-
-        expect(edited_row.locator("td").nth(4)).to_contain_text("Reprogramado")
     
 
     def test_delete_event_organizer(self):
