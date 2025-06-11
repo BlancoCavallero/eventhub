@@ -1,92 +1,79 @@
-from django.test import TestCase
-from django.urls import reverse
-from django.utils import timezone
+import re
+from django.utils.timezone import now, timedelta
+from playwright.sync_api import expect
+
 from app.models import Event, User, Venue, Category
-import datetime
 
-class EventE2ETest(TestCase):
+
+from .base import BaseE2ETest
+
+
+class TestEventStateFlow(BaseE2ETest):
     def setUp(self):
-        self.register_url = reverse("register")
-        self.login_url = reverse("login")
-        self.event_create_url = reverse("event_form")
+        super().setUp()
+        self.organizer = User.objects.create_user(username='organizer', password='password', is_organizer=True)
+        self.category = Category.objects.create(name="Tecnologia")
         self.venue = Venue.objects.create(
-            name="Venue Test",
-            address="Calle Falsa 123",
-            city="Springfield",
+            name="Test Venue",
+            address="Some Street",
+            city="Test City",
             capacity=100,
-            contact="contacto@example.com"
+            contact="venue@test.com"
         )
-        self.category = Category.objects.create(name="Categoría prueba")
-    
-    def test_full_event_flow(self):
-        # 1. Registro usuario organizador
-        user_data = {
-            "email": "organizer@example.com",
-            "username": "organizer",
-            "is-organizer": "on",  # checkbox present
-            "password": "strongpass123",
-            "password-confirm": "strongpass123",
-        }
-        response = self.client.post(self.register_url, user_data)
-        self.assertEqual(response.status_code, 302)  # Redirect after register
 
-        # 2. Login usuario organizador (no siempre necesario porque auto login en register, pero hacemos para el flujo)
-        login_data = {
-            "username": "organizer",
-            "password": "strongpass123",
-        }
-        response = self.client.post(self.login_url, login_data)
-        self.assertEqual(response.status_code, 302)  # Redirect after login
+    def test_event_shows_correct_state(self):
+        #accedo al login y me logueo como organizador, previamente creado.
+        self.page.goto(f'{self.live_server_url}/accounts/login/')
+        self.page.fill('input[name="username"]', 'organizer')
+        self.page.fill('input[name="password"]', 'password')
+        self.page.click('button:has-text("Iniciar sesión")')
+        expect(self.page).not_to_have_url(f'{self.live_server_url}/accounts/login/')
 
-        # 3. Crear evento sin estado para que se asigne 'active' automáticamente
-        future_date = (timezone.now() + datetime.timedelta(days=10)).date().isoformat()
-        create_event_data = {
-            "title": "Evento de prueba",
-            "description": "Descripción del evento",
-            "date": future_date,
-            "time": "20:00",
-            "categories": [self.category.id],  # type: ignore
-             "venue": self.venue.id, # type: ignore
-            # No se envía 'status' para probar que se asigne 'active' por defecto
-        }
-        response = self.client.post(self.event_create_url, create_event_data)
+
+        self.page.goto(f'{self.live_server_url}/events/')
+        self.page.click("text=Crear Evento")
+        self.page.fill('input[name="title"]', 'Conferencia Playwright')
+        self.page.fill('textarea[name="description"]', 'Una conferencia sobre pruebas automáticas con Playwright.')
+
+       
+        future_date = (now() + timedelta(days=3)).date().isoformat()
+        future_time = (now() + timedelta(hours=2)).time().strftime('%H:%M')
+        self.page.fill('input[name="date"]', future_date)
+        self.page.fill('input[name="time"]', future_time)
+
         
-        self.assertEqual(response.status_code, 302)  # Redirect después de crear
+        self.page.check(f'input[type="checkbox"][value="{self.category.id}"]') # type: ignore
+        self.page.select_option('select[name="venue"]', str(self.venue.id)) # type: ignore
 
-        event = Event.objects.get(title="Evento de prueba")
-        self.assertEqual(event.status, "active")
+        # Enviar el formulario
+        self.page.get_by_role("button", name="Crear Evento").click()
+        self.page.goto(f'{self.live_server_url}/events/')
+        expect(self.page).to_have_url(f'{self.live_server_url}/events/')
+        expect(self.page.locator("text=Conferencia Playwright")).to_be_visible() #verifico si se creo el evento
 
-        # 4. Editar evento cambiando fecha para que cambie estado a 'rescheduled'
-        new_future_date = (timezone.now() + datetime.timedelta(days=20)).date().isoformat()
-        edit_url = reverse("event_edit", kwargs={"id": event.id}) # type: ignore
-        edit_data = {
-            "title": event.title,
-            "description": event.description,
-            "date": new_future_date,
-            "time": "20:00",
-            "status": event.status,  # mantenemos el estado para que update_status detecte cambio fecha
-             "categories": [self.category.id],  # type: ignore
-             "venue": self.venue.id, # type: ignore
-        }
-        response = self.client.post(edit_url, edit_data)
-        self.assertEqual(response.status_code, 302)
+       
+        self.page.click('a[title="Editar"]')
 
-        event.refresh_from_db()
+        
+        expect(self.page).to_have_url(re.compile(r"/events/\d+/edit/"))
+
+        # Modificar la fecha y hora
+        new_date = (now() + timedelta(days=5)).date().isoformat()
+        new_time = (now() + timedelta(hours=4)).time().strftime('%H:%M')
+
+        self.page.fill('input[name="date"]', new_date)
+        self.page.fill('input[name="time"]', new_time)
+
+        # Enviar el formulario
+        self.page.get_by_role("button", name="Crear Evento").click()
+
+        # Verificar redirección a la lista y que el evento sigue presente
+        expect(self.page).to_have_url(f'{self.live_server_url}/events/')
+        expect(self.page.locator("text=Conferencia Playwright")).to_be_visible()
+
+
+        #verificar que el estado haya cambiado
+        event = Event.objects.get(title="Conferencia Playwright")
         self.assertEqual(event.status, "rescheduled")
 
-        # 5. Modificar estado a 'sold_out'
-        sold_out_data = {
-            "title": event.title,
-            "description": event.description,
-            "date": new_future_date,
-            "time": "20:00",
-            "status": "sold_out",
-            "categories": [self.category.id],  # type: ignore
-             "venue": self.venue.id, # type: ignore
-            
-        }
-        response = self.client.post(edit_url, sold_out_data)
-        self.assertEqual(response.status_code, 302)
 
-        event.refresh_from_db()
-        self.assertEqual(event.status, "sold_out")
