@@ -26,7 +26,7 @@ SECRET_KEY = "django-insecure--f67ll=2-b2qolla9=1f8mtg@s=l8^y8aj=@ij-0f4)eg@%8(0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,eventhub-v0-2-0.onrender.com").split(",")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,eventhub-latest-yh38.onrender.com").split(",")
 
 
 # Application definition
@@ -140,7 +140,7 @@ TIME_ZONE = "America/Argentina/Buenos_Aires"
 USE_TZ = True
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://eventhub-v0-2-0.onrender.com",
+    "https://eventhub-latest-yh38.onrender.com",
     "https://localhost",
     "https://127.0.0.1",
 ]
