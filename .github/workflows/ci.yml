@@ -75,4 +75,4 @@ jobs:
           python -m playwright install --with-deps
 
       - name: Run e2e Playwright tests
-        run: pytest -v app/test/test_e2e
+        run: python manage.py test app/test/test_e2e
