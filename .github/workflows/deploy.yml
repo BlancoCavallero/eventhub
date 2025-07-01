@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main  # para deploy continuo al mergear PRs a main
+      - main
 
 jobs:
   build-and-deploy:
@@ -20,15 +20,16 @@ jobs:
       - name: Definir tag para la imagen Docker
         id: get_tag
         run: |
+          git fetch --tags
           if [ "${{ github.event_name }}" = "release" ]; then
-            echo "tag=${{ github.event.release.tag_name }}" >> $GITHUB_OUTPUT
+            tag=$(git describe --tags --abbrev=0 || echo "")
           else
             branch=${GITHUB_REF##*/}
             datetime=$(date +'%Y%m%d%H%M%S')
-            safe_tag="${branch}-${datetime}"
-            safe_tag=$(echo "$safe_tag" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9._-' '-')
-            echo "tag=$safe_tag" >> $GITHUB_OUTPUT
+            tag="${branch}-${datetime}"
           fi
+          tag=$(echo "$tag" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9._-' '-')
+          echo "tag=$tag" >> $GITHUB_OUTPUT
 
       - name: Loguearse en DockerHub
         uses: docker/login-action@v3
@@ -36,7 +37,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Construir imagen Docker con tags del release y latest
+      - name: Construir imagen Docker con tag y latest
         run: |
           docker build \
             -t ${{ secrets.DOCKER_USERNAME }}/eventhub:${{ steps.get_tag.outputs.tag }} \
@@ -49,6 +50,13 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/eventhub:latest
 
       - name: Desplegar en Render
+        env:
+          DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
         run: |
-          curl -X POST https://api.render.com/deploy/srv-${{ secrets.RENDER_SERVICE_ID }} \
-            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
+          if [ -z "$DEPLOY_HOOK" ]; then
+            echo "ERROR: El secreto RENDER_DEPLOY_HOOK está vacío o mal definido."
+            exit 1
+          fi
+          echo "Desplegando a Render con el hook:"
+          echo "$DEPLOY_HOOK"
+          curl -X POST "$DEPLOY_HOOK"
